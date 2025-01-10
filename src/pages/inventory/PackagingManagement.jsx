@@ -19,9 +19,9 @@ import {
   IconButton,
   Chip,
 } from '@mui/material';
-import { Add, Edit, Visibility } from '@mui/icons-material';
+import { Add, Edit, Visibility, PictureAsPdf } from '@mui/icons-material';
 import toast from 'react-hot-toast';
-
+import { jsPDF } from 'jspdf';
 const mockOrders = [
   {
     id: 'ORD-001',
@@ -89,6 +89,49 @@ export default function PackagingManagement() {
     setNewPackage({ length: '', width: '', height: '', weight: '' });
   };
 
+  const generatePackageLabel = (packageData) => {
+    const doc = new jsPDF();
+
+    // Add company header
+    doc.setFontSize(16);
+    doc.text('MFRS. OF TECHNICAL TEXTILE FABRIC', 105, 20, { align: 'center' });
+
+    // Add package details in a grid format
+    doc.setFontSize(12);
+    const startY = 40;
+    const lineHeight = 10;
+
+    // Left column
+    doc.text(`ROLL No.    : ${packageData.rollNo}`, 20, startY);
+    doc.text(`COLOR       : ${packageData.color}`, 20, startY + lineHeight);
+    doc.text(`UNIT No.    : 1`, 20, startY + lineHeight * 2);
+    doc.text(`CUST. Code  : SW350`, 20, startY + lineHeight * 3);
+    doc.text(`Rolls In bundle : 1`, 20, startY + lineHeight * 4);
+    doc.text(`Lot No      : 2415N9U1`, 20, startY + lineHeight * 5);
+
+    // Right column
+    doc.text(`GSM         : ${packageData.gsm}`, 120, startY);
+    doc.text(`WIDTH       : ${packageData.width}`, 120, startY + lineHeight);
+    doc.text(`LENGTH      : ${packageData.length}`, 120, startY + lineHeight * 2);
+    doc.text(`GROSS WT.   : ${packageData.grossWeight}`, 120, startY + lineHeight * 3);
+    doc.text(`NET WT.     : ${packageData.netWeight}`, 120, startY + lineHeight * 4);
+
+    // Additional details
+    const startY2 = startY + lineHeight * 6;
+    doc.text(`PATTERN     : ${packageData.pattern}`, 20, startY2);
+    doc.text(`TYPE OF FABRIC : ${packageData.fabricType}`, 20, startY2 + lineHeight);
+    doc.text(`TREATMENT   : ${packageData.treatment}`, 20, startY2 + lineHeight * 2);
+    doc.text(`TECHNOLOGY  : ${packageData.technology}`, 20, startY2 + lineHeight * 3);
+
+    // Add barcode (simulated with a black rectangle)
+    doc.setFillColor(0, 0, 0);
+    doc.rect(20, startY2 + lineHeight * 4, 80, 20, 'F');
+
+    doc.save(`package-label-${packageData.rollNo}.pdf`);
+    toast.success('Package label downloaded successfully');
+  };
+
+
   return (
     <>
       <Card>
@@ -131,12 +174,13 @@ export default function PackagingManagement() {
                       />
                     </TableCell>
                     <TableCell>
-                      <IconButton
-                        color="primary"
+                      <Button
+                        size="small"
+                        variant="outlined"
                         onClick={() => handleViewPackages(order)}
                       >
-                        <Visibility />
-                      </IconButton>
+                        View Packages
+                      </Button>
                     </TableCell>
                   </TableRow>
                 ))}
@@ -183,6 +227,12 @@ export default function PackagingManagement() {
                         onClick={() => handleEditPackage(pkg)}
                       >
                         <Edit />
+                      </IconButton>
+                      <IconButton
+                        color="primary"
+                        onClick={() => generatePackageLabel(pkg)}
+                      >
+                        <PictureAsPdf />
                       </IconButton>
                     </TableCell>
                   </TableRow>
