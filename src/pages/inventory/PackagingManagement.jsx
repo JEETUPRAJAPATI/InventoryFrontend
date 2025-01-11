@@ -47,16 +47,20 @@ const mockOrders = [
     ]
   }
 ];
-
+const initialPackageState = {
+  length: '',
+  width: '',
+  height: '',
+  weight: ''
+};
 export default function PackagingManagement() {
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [packageListOpen, setPackageListOpen] = useState(false);
   const [editPackageOpen, setEditPackageOpen] = useState(false);
   const [selectedPackage, setSelectedPackage] = useState(null);
+  const [packages, setPackages] = useState([initialPackageState]);
   const [addPackageOpen, setAddPackageOpen] = useState(false);
-  const [packages, setPackages] = useState([
-    { length: '', width: '', height: '', weight: '' },
-  ]);
+
 
   const [newPackage, setNewPackage] = useState({
     length: '',
@@ -88,33 +92,38 @@ export default function PackagingManagement() {
 
   // Handle Order Selection
   const handleOrderChange = (e) => {
-    const selectedOrderId = e.target.value;
-    const order = mockOrders.find(order => order.id === parseInt(selectedOrderId));
+    const order = mockOrders.find(o => o.id === e.target.value);
     setSelectedOrder(order);
+
+    if (order) {
+      const [length, width, height] = order.totalDimensions.split('x');
+      const newPackage = {
+        length: length || '',
+        width: width || '',
+        height: height || '',
+        weight: order.totalWeight || ''
+      };
+      setPackages([newPackage]);
+    }
   };
 
-  // Add new package section
-  const handleAddPackageRow = () => {
-    setPackages([
-      ...packages,
-      { length: '', width: '', height: '', weight: '' },
-    ]);
+
+  const handleAddPackage = () => {
+    setPackages([...packages, { ...initialPackageState }]);
   };
 
-  // Update package fields
-  const handlePackageChange = (index, field, value) => {
-    const updatedPackages = packages.map((pkg, i) =>
-      i === index ? { ...pkg, [field]: value } : pkg
-    );
-    setPackages(updatedPackages);
+  const handleSavePackages = () => {
+    toast.success('Packages saved successfully');
+    handleCancel();
   };
 
-  // Save new packages
-  const handleSaveNewPackages = () => {
-    toast.success('New packages added successfully');
+  const handleCancel = () => {
+    setSelectedOrder(null);
+    setPackages([initialPackageState]);
     setAddPackageOpen(false);
-    setPackages([{ length: '', width: '', height: '', weight: '' }]); // Reset packages
   };
+
+
   const generatePackageLabel = (packageData) => {
     const doc = new jsPDF();
 
@@ -167,7 +176,7 @@ export default function PackagingManagement() {
             <Button
               variant="contained"
               startIcon={<Add />}
-              onClick={setAddPackageOpen}
+              onClick={() => setAddPackageOpen(true)}
             >
               Add Package
             </Button>
@@ -330,92 +339,79 @@ export default function PackagingManagement() {
       {/* Add Package Modal */}
       <Dialog
         open={addPackageOpen}
-        onClose={() => setAddPackageOpen(false)}
+        onClose={handleCancel}
         maxWidth="md"
         fullWidth
       >
         <DialogTitle>Add New Packages</DialogTitle>
         <DialogContent>
           <Grid container spacing={2} sx={{ mt: 1 }}>
-            <Grid container spacing={2}>
-              {/* Select Order Dropdown */}
-              <Grid item xs={12}>
-                <TextField
-                  select
-                  label="Select Order"
-                  fullWidth
-                  SelectProps={{
-                    native: true,
-                  }}
-                  onChange={handleOrderChange}
-                >
-                  <option value="">Select an order</option>
-                  {mockOrders && mockOrders.length > 0 ? (
-                    mockOrders.map((order) => (
-                      <option key={order.id} value={order.id}>
-                        {order.id} - {order.customerName}
-                      </option>
-                    ))
-                  ) : (
-                    <option value="">No orders available</option>
-                  )}
-                </TextField>
-              </Grid>
+            <Grid item xs={12}>
+              <TextField
+                select
+                label="Select Order"
+                fullWidth
+                value={selectedOrder?.id || ''}
+                onChange={handleOrderChange}
+                SelectProps={{
+                  native: true,
+                }}
+              >
+                <option value="">Select an order</option>
+                {mockOrders.map((order) => (
+                  <option key={order.id} value={order.id}>
+                    {order.id} - {order.customerName}
+                  </option>
+                ))}
+              </TextField>
             </Grid>
+
+            {selectedOrder && (
+              <Grid item xs={12}>
+                <Box sx={{ mb: 2, p: 2, bgcolor: 'background.paper', borderRadius: 1 }}>
+                  <Typography variant="subtitle2" gutterBottom>Order Details</Typography>
+                  <Typography variant="body2">Customer: {selectedOrder.customerName}</Typography>
+                  <Typography variant="body2">Dimensions: {selectedOrder.totalDimensions}</Typography>
+                  <Typography variant="body2">Weight: {selectedOrder.totalWeight} kg</Typography>
+                </Box>
+              </Grid>
+            )}
+
             {packages.map((pkg, index) => (
               <Fragment key={index}>
                 <Grid item xs={12}>
-                  <Box
-                    sx={{
-                      border: '1px solid #ddd',
-                      padding: 2,
-                      borderRadius: 2,
-                      marginBottom: 2,
-                    }}
-                  >
-                    <Typography variant="h6">Package {index + 1}</Typography>
+                  <Box sx={{ border: '1px solid #ddd', p: 2, borderRadius: 1 }}>
+                    <Typography variant="h6" gutterBottom>Package {index + 1}</Typography>
                     <Grid container spacing={2}>
                       <Grid item xs={6}>
                         <TextField
                           label="Length (cm)"
-                          type="number"
                           value={pkg.length}
-                          onChange={(e) =>
-                            handlePackageChange(index, 'length', e.target.value)
-                          }
+                          onChange={(e) => handlePackageChange(index, 'length', e.target.value)}
                           fullWidth
                         />
                       </Grid>
                       <Grid item xs={6}>
                         <TextField
                           label="Width (cm)"
-                          type="number"
                           value={pkg.width}
-                          onChange={(e) =>
-                            handlePackageChange(index, 'width', e.target.value)
-                          }
+                          onChange={(e) => handlePackageChange(index, 'width', e.target.value)}
                           fullWidth
                         />
                       </Grid>
                       <Grid item xs={6}>
                         <TextField
                           label="Height (cm)"
-                          type="number"
                           value={pkg.height}
-                          onChange={(e) =>
-                            handlePackageChange(index, 'height', e.target.value)
-                          }
+                          onChange={(e) => handlePackageChange(index, 'height', e.target.value)}
                           fullWidth
                         />
                       </Grid>
                       <Grid item xs={6}>
                         <TextField
                           label="Weight (kg)"
-                          type="number"
                           value={pkg.weight}
-                          onChange={(e) =>
-                            handlePackageChange(index, 'weight', e.target.value)
-                          }
+                          onChange={(e) => handlePackageChange(index, 'weight', e.target.value)}
                           fullWidth
                         />
                       </Grid>
@@ -425,28 +421,26 @@ export default function PackagingManagement() {
               </Fragment>
             ))}
 
-            {/* Button to add new package section */}
             <Grid item xs={12}>
-              <Box display="flex" alignItems="center">
-                <IconButton
-                  color="primary"
-                  onClick={handleAddPackageRow}
-                  aria-label="add-package"
-                >
-                  <AddCircleOutlineIcon />
-                </IconButton>
-                <span>Add Another Package</span>
-              </Box>
+              <Button
+                variant="outlined"
+                onClick={handleAddPackage}
+                fullWidth
+              >
+                Add Another Package
+              </Button>
             </Grid>
           </Grid>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setAddPackageOpen(false)}>Cancel</Button>
-          <Button variant="contained" onClick={handleSaveNewPackages}>
+          <Button onClick={handleCancel}>Cancel</Button>
+          <Button variant="contained" onClick={handleSavePackages}>
             Save Packages
           </Button>
         </DialogActions>
       </Dialog>
+
+
     </>
   );
 }
