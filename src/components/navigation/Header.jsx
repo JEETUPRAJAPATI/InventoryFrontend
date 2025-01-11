@@ -49,13 +49,6 @@ export default function Header({ onMenuClick }) {
         >
           <Menu />
         </IconButton>
-        {isMobile && (
-          <Box sx={{ display: 'flex', alignItems: 'center', mr: 2 }}>
-            <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
-              BagMaster Pro
-            </Typography>
-          </Box>
-        )}
         {/* Title - Hidden on mobile */}
 
         <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
