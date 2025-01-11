@@ -57,21 +57,19 @@ export default function Header({ onMenuClick }) {
           </Box>
         )}
         {/* Title - Hidden on mobile */}
+
+        <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
+          {getTitle()}
+        </Typography>
+
         {!isMobile && (
-          <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
-            {getTitle()}
-          </Typography>
-        )}
-
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-          <IconButton color="inherit" onClick={toggleColorMode}>
-            {theme.palette.mode === 'dark' ? <Brightness7 /> : <Brightness4 />}
-          </IconButton>
-          <IconButton color="inherit">
-            <Notifications />
-          </IconButton>
-
-          {!isMobile && (
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <IconButton color="inherit" onClick={toggleColorMode}>
+              {theme.palette.mode === 'dark' ? <Brightness7 /> : <Brightness4 />}
+            </IconButton>
+            <IconButton color="inherit">
+              <Notifications />
+            </IconButton>
             <Button
               color="inherit"
               onClick={logout}
@@ -80,9 +78,8 @@ export default function Header({ onMenuClick }) {
             >
               Logout
             </Button>
-          )}
-
-        </Box>
+          </Box>
+        )}
       </Toolbar>
     </AppBar>
   );
