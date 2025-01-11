@@ -130,7 +130,7 @@ export default function OpsertOrderList({ status }) {
                 <TableCell>Order ID</TableCell>
                 <TableCell>Agent Name</TableCell>
                 <TableCell>Bag Type</TableCell>
-                <TableCell>Size</TableCell>
+                <TableCell>Bag Size</TableCell>
                 <TableCell>Colors</TableCell>
                 <TableCell>Print Type</TableCell>
                 <TableCell>Quantity</TableCell>

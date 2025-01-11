@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import React, { Fragment, useState } from 'react';
+
 import {
   Card,
   Table,
@@ -19,8 +20,10 @@ import {
   IconButton,
   Chip,
 } from '@mui/material';
-import { Add, Edit, Visibility, PictureAsPdf } from '@mui/icons-material';
+import { Add, Edit, Visibility } from '@mui/icons-material';
 import toast from 'react-hot-toast';
+import { AddCircleOutline as AddCircleOutlineIcon } from '@mui/icons-material';
+import { PictureAsPdf } from '@mui/icons-material';
 import { jsPDF } from 'jspdf';
 const mockOrders = [
   {
@@ -51,6 +54,10 @@ export default function PackagingManagement() {
   const [editPackageOpen, setEditPackageOpen] = useState(false);
   const [selectedPackage, setSelectedPackage] = useState(null);
   const [addPackageOpen, setAddPackageOpen] = useState(false);
+  const [packages, setPackages] = useState([
+    { length: '', width: '', height: '', weight: '' },
+  ]);
+
   const [newPackage, setNewPackage] = useState({
     length: '',
     width: '',
@@ -79,16 +86,35 @@ export default function PackagingManagement() {
     setEditPackageOpen(false);
   };
 
-  const handleAddPackage = () => {
-    setAddPackageOpen(true);
+  // Handle Order Selection
+  const handleOrderChange = (e) => {
+    const selectedOrderId = e.target.value;
+    const order = mockOrders.find(order => order.id === parseInt(selectedOrderId));
+    setSelectedOrder(order);
   };
 
-  const handleSaveNewPackage = () => {
-    toast.success('New package added successfully');
+  // Add new package section
+  const handleAddPackageRow = () => {
+    setPackages([
+      ...packages,
+      { length: '', width: '', height: '', weight: '' },
+    ]);
+  };
+
+  // Update package fields
+  const handlePackageChange = (index, field, value) => {
+    const updatedPackages = packages.map((pkg, i) =>
+      i === index ? { ...pkg, [field]: value } : pkg
+    );
+    setPackages(updatedPackages);
+  };
+
+  // Save new packages
+  const handleSaveNewPackages = () => {
+    toast.success('New packages added successfully');
     setAddPackageOpen(false);
-    setNewPackage({ length: '', width: '', height: '', weight: '' });
+    setPackages([{ length: '', width: '', height: '', weight: '' }]); // Reset packages
   };
-
   const generatePackageLabel = (packageData) => {
     const doc = new jsPDF();
 
@@ -141,7 +167,7 @@ export default function PackagingManagement() {
             <Button
               variant="contained"
               startIcon={<Add />}
-              onClick={handleAddPackage}
+              onClick={setAddPackageOpen}
             >
               Add Package
             </Button>
@@ -301,74 +327,123 @@ export default function PackagingManagement() {
       </Dialog>
 
       {/* Add Package Modal */}
+      {/* Add Package Modal */}
       <Dialog
         open={addPackageOpen}
         onClose={() => setAddPackageOpen(false)}
         maxWidth="md"
         fullWidth
       >
-        <DialogTitle>Add New Package</DialogTitle>
+        <DialogTitle>Add New Packages</DialogTitle>
         <DialogContent>
           <Grid container spacing={2} sx={{ mt: 1 }}>
+            <Grid container spacing={2}>
+              {/* Select Order Dropdown */}
+              <Grid item xs={12}>
+                <TextField
+                  select
+                  label="Select Order"
+                  fullWidth
+                  SelectProps={{
+                    native: true,
+                  }}
+                  onChange={handleOrderChange}
+                >
+                  <option value="">Select an order</option>
+                  {mockOrders && mockOrders.length > 0 ? (
+                    mockOrders.map((order) => (
+                      <option key={order.id} value={order.id}>
+                        {order.id} - {order.customerName}
+                      </option>
+                    ))
+                  ) : (
+                    <option value="">No orders available</option>
+                  )}
+                </TextField>
+              </Grid>
+            </Grid>
+            {packages.map((pkg, index) => (
+              <Fragment key={index}>
+                <Grid item xs={12}>
+                  <Box
+                    sx={{
+                      border: '1px solid #ddd',
+                      padding: 2,
+                      borderRadius: 2,
+                      marginBottom: 2,
+                    }}
+                  >
+                    <Typography variant="h6">Package {index + 1}</Typography>
+                    <Grid container spacing={2}>
+                      <Grid item xs={6}>
+                        <TextField
+                          label="Length (cm)"
+                          type="number"
+                          value={pkg.length}
+                          onChange={(e) =>
+                            handlePackageChange(index, 'length', e.target.value)
+                          }
+                          fullWidth
+                        />
+                      </Grid>
+                      <Grid item xs={6}>
+                        <TextField
+                          label="Width (cm)"
+                          type="number"
+                          value={pkg.width}
+                          onChange={(e) =>
+                            handlePackageChange(index, 'width', e.target.value)
+                          }
+                          fullWidth
+                        />
+                      </Grid>
+                      <Grid item xs={6}>
+                        <TextField
+                          label="Height (cm)"
+                          type="number"
+                          value={pkg.height}
+                          onChange={(e) =>
+                            handlePackageChange(index, 'height', e.target.value)
+                          }
+                          fullWidth
+                        />
+                      </Grid>
+                      <Grid item xs={6}>
+                        <TextField
+                          label="Weight (kg)"
+                          type="number"
+                          value={pkg.weight}
+                          onChange={(e) =>
+                            handlePackageChange(index, 'weight', e.target.value)
+                          }
+                          fullWidth
+                        />
+                      </Grid>
+                    </Grid>
+                  </Box>
+                </Grid>
+              </Fragment>
+            ))}
+
+            {/* Button to add new package section */}
             <Grid item xs={12}>
-              <TextField
-                select
-                label="Select Order"
-                fullWidth
-                SelectProps={{
-                  native: true,
-                }}
-              >
-                <option value="">Select an order</option>
-                {mockOrders.map((order) => (
-                  <option key={order.id} value={order.id}>
-                    {order.id} - {order.customerName}
-                  </option>
-                ))}
-              </TextField>
-            </Grid>
-            <Grid item xs={6}>
-              <TextField
-                label="Length (cm)"
-                type="number"
-                value={newPackage.length}
-                onChange={(e) => setNewPackage({ ...newPackage, length: e.target.value })}
-                fullWidth
-              />
-            </Grid>
-            <Grid item xs={6}>
-              <TextField
-                label="Width (cm)"
-                type="number"
-                value={newPackage.width}
-                onChange={(e) => setNewPackage({ ...newPackage, width: e.target.value })}
-                fullWidth
-              />
-            </Grid>
-            <Grid item xs={6}>
-              <TextField
-                label="Height (cm)"
-                type="number"
-                value={newPackage.height}
-                onChange={(e) => setNewPackage({ ...newPackage, height: e.target.value })}
-                fullWidth
-              />
-            </Grid>
-            <Grid item xs={6}>
-              <TextField
-                label="Weight (kg)"
-                type="number"
-                value={newPackage.weight}
-                onChange={(e) => setNewPackage({ ...newPackage, weight: e.target.value })}
-                fullWidth
-              />
+              <Box display="flex" alignItems="center">
+                <IconButton
+                  color="primary"
+                  onClick={handleAddPackageRow}
+                  aria-label="add-package"
+                >
+                  <AddCircleOutlineIcon />
+                </IconButton>
+                <span>Add Another Package</span>
+              </Box>
             </Grid>
           </Grid>
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setAddPackageOpen(false)}>Cancel</Button>
-          <Button variant="contained" onClick={handleSaveNewPackage}>
-            Add Package
+          <Button variant="contained" onClick={handleSaveNewPackages}>
+            Save Packages
           </Button>
         </DialogActions>
       </Dialog>
