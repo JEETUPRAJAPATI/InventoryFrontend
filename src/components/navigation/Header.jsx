@@ -6,6 +6,7 @@ import {
   Box,
   useTheme,
   Button,
+  useMediaQuery,
 } from '@mui/material';
 import {
   Menu,
@@ -21,7 +22,7 @@ export default function Header({ onMenuClick }) {
   const theme = useTheme();
   const { toggleColorMode } = useColorMode();
   const { logout, user } = useAuth();
-
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
   const getTitle = () => {
     const registrationType = user?.registrationType ? capitalizeWords(user.registrationType) : 'Production';
@@ -48,9 +49,20 @@ export default function Header({ onMenuClick }) {
         >
           <Menu />
         </IconButton>
-        <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
-          {getTitle()}
-        </Typography>
+        {isMobile && (
+          <Box sx={{ display: 'flex', alignItems: 'center', mr: 2 }}>
+            <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
+              BagMaster Pro
+            </Typography>
+          </Box>
+        )}
+        {/* Title - Hidden on mobile */}
+        {!isMobile && (
+          <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
+            {getTitle()}
+          </Typography>
+        )}
+
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
           <IconButton color="inherit" onClick={toggleColorMode}>
             {theme.palette.mode === 'dark' ? <Brightness7 /> : <Brightness4 />}
@@ -58,14 +70,18 @@ export default function Header({ onMenuClick }) {
           <IconButton color="inherit">
             <Notifications />
           </IconButton>
-          <Button
-            color="inherit"
-            onClick={logout}
-            startIcon={<ExitToApp />}
-            sx={{ ml: 2 }}
-          >
-            Logout
-          </Button>
+
+          {!isMobile && (
+            <Button
+              color="inherit"
+              onClick={logout}
+              startIcon={<ExitToApp />}
+              sx={{ ml: 2 }}
+            >
+              Logout
+            </Button>
+          )}
+
         </Box>
       </Toolbar>
     </AppBar>

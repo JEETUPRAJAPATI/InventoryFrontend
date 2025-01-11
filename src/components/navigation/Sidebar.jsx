@@ -9,12 +9,16 @@ import {
   useTheme,
   useMediaQuery,
   Typography,
+  Divider,
+  IconButton,
 } from '@mui/material';
 import * as Icons from '@mui/icons-material';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
 import { menuConfigs } from './SidebarConfig';
-
+import { useColorMode } from '../../contexts/ColorModeContext';
+import { Brightness4, Brightness7, ExitToApp } from '@mui/icons-material';
+import logo from '../../assets/logo.jpg';
 const DRAWER_WIDTH = 240;
 
 export default function Sidebar({ open, onClose }) {
@@ -22,7 +26,8 @@ export default function Sidebar({ open, onClose }) {
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const location = useLocation();
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
+  const { toggleColorMode } = useColorMode();
 
   const getMenuItems = () => {
     const currentUser = user || {};
@@ -32,11 +37,6 @@ export default function Sidebar({ open, onClose }) {
       return [];
     }
 
-    // console.log('registrationType:', user.registrationType);
-    // console.log('operatorType:', user.operatorType);
-    // console.log('bagType:', user.bagType);
-
-    // Handle production role with operator types
     if (user.registrationType === 'production') {
       const operatorMenus = {
         flexo_printing: menuConfigs.production.flexo_printing,
@@ -44,8 +44,7 @@ export default function Sidebar({ open, onClose }) {
         w_cut_bagmaking: menuConfigs.production.w_cut_bagmaking,
         d_cut_bagmaking: menuConfigs.production.d_cut_bagmaking,
       };
-      console.log('Listing', operatorMenus);
-      // Fix for w_cut_bagmaking and d_cut_bagmaking
+
       if (user.operatorType === 'bag_making') {
         if (user.bagType === 'w_cut') {
           return operatorMenus.w_cut_bagmaking || [];
@@ -54,11 +53,8 @@ export default function Sidebar({ open, onClose }) {
           return operatorMenus.d_cut_bagmaking || [];
         }
       }
-      // Return menus for other operator types
       return operatorMenus[user.operatorType] || [];
     }
-    // console.log('registrationType:', user.registrationType);
-    // Return menu items for other roles
     return menuConfigs[user.registrationType] || [];
   };
 
@@ -88,14 +84,41 @@ export default function Sidebar({ open, onClose }) {
         },
       }}
     >
-      <Box sx={{ p: 2 }}>
-        <Typography variant="subtitle2" color="text.secondary">
-          {user?.registrationType?.split('_').map(word =>
-            word.charAt(0).toUpperCase() + word.slice(1)
-          ).join(' ')} Dashboard
-        </Typography>
+      {/* Logo and Company Name */}
+      <Box
+        sx={{
+          p: 2,
+          display: 'block', // Ensures block layout
+          gap: 2,
+          bgcolor: 'background.default', // Optional: Sets a theme-friendly background
+          borderRadius: 1, // Optional: Adds a slight border radius for better visuals
+        }}
+      >
+        <Box sx={{ display: 'block', alignItems: 'center', gap: 2, }}>
+          <img src={logo} alt="Company Logo" style={{ height: '50px', objectFit: 'contain' }}
+          />
+          <Typography
+            variant="subtitle2"
+            color="text.secondary"
+            sx={{
+              fontWeight: 500,
+              textTransform: 'capitalize',
+              whiteSpace: 'nowrap',
+            }}
+          >
+            {user?.registrationType
+              ?.split('_')
+              .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+              .join(' ')}{' '}
+            Dashboard
+          </Typography>
+        </Box>
       </Box>
-      <List>
+
+      <Divider />
+
+      {/* Menu Items */}
+      <List sx={{ flexGrow: 1 }}>
         {menuItems.map((item) => (
           <ListItem key={item.title} disablePadding>
             <ListItemButton
@@ -108,6 +131,31 @@ export default function Sidebar({ open, onClose }) {
           </ListItem>
         ))}
       </List>
+
+      {/* Mobile-only controls at bottom */}
+      {isMobile && (
+        <>
+          <Divider />
+          <List>
+            <ListItem>
+              <ListItemButton onClick={toggleColorMode}>
+                <ListItemIcon>
+                  {theme.palette.mode === 'dark' ? <Brightness7 /> : <Brightness4 />}
+                </ListItemIcon>
+                <ListItemText primary={`${theme.palette.mode === 'dark' ? 'Light' : 'Dark'} Mode`} />
+              </ListItemButton>
+            </ListItem>
+            <ListItem>
+              <ListItemButton onClick={logout}>
+                <ListItemIcon>
+                  <ExitToApp />
+                </ListItemIcon>
+                <ListItemText primary="Logout" />
+              </ListItemButton>
+            </ListItem>
+          </List>
+        </>
+      )}
     </Drawer>
   );
 }
