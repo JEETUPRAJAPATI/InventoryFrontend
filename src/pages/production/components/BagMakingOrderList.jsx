@@ -19,48 +19,44 @@ import { Update, CheckCircle, LocalShipping, QrCodeScanner, Receipt } from '@mui
 import toast from 'react-hot-toast';
 import { useState } from 'react';
 import VerifyOrderDialog from './VerifyOrderDialog';
-
 const mockOrders = [
   {
     id: 'BAG-001',
     order_id: 'ORD-001',
     job_name: 'Premium D-Cut Bags',
-    role_size: '12x15',
     bag_type: 'D-Cut',
-    bag_color: 'Blue',
-    bag_size: '12x15x4',
+    fabric_type: 'Polyester',
     gsm: '90',
+    fabric_color: 'Blue',
+    bag_size: '12x15x4',
     quantity: 1000,
-    weight: '500',
-    qnt: '100',
+    remarks: '', // Empty if no remarks
     status: 'pending'
   },
   {
     id: 'BAG-002',
     order_id: 'ORD-002',
     job_name: 'Eco D-Cut Bags',
-    role_size: '10x12',
     bag_type: 'D-Cut',
-    bag_color: 'Green',
-    bag_size: '10x12x3',
+    fabric_type: 'Recycled Polyester',
     gsm: '80',
+    fabric_color: 'Green',
+    bag_size: '10x12x3',
     quantity: 2000,
-    weight: '800',
-    qnt: '150',
+    remarks: 'Urgent delivery required',
     status: 'in_progress'
   },
   {
     id: 'BAG-003',
     order_id: 'ORD-003',
     job_name: 'Luxury D-Cut Bags',
-    role_size: '15x20',
     bag_type: 'D-Cut',
-    bag_color: 'Black',
-    bag_size: '15x20x5',
+    fabric_type: 'Silk',
     gsm: '100',
+    fabric_color: 'Black',
+    bag_size: '15x20x5',
     quantity: 3000,
-    weight: '900',
-    qnt: '200',
+    remarks: 'Luxury quality, high price',
     status: 'completed',
     billingStatus: 'pending'
   }
@@ -158,16 +154,15 @@ export default function BagMakingOrderList({ status, bagType }) {
           <Table>
             <TableHead>
               <TableRow>
-                <TableCell>Role Size</TableCell>
                 <TableCell>Order ID</TableCell>
                 <TableCell>Job Name</TableCell>
                 <TableCell>Bag Type</TableCell>
-                <TableCell>Bag Color</TableCell>
-                <TableCell>Bag Size</TableCell>
+                <TableCell>Fabric Type</TableCell>
                 <TableCell>GSM</TableCell>
+                <TableCell>Fabric Color</TableCell>
+                <TableCell>Bag Size</TableCell>
                 <TableCell>Quantity</TableCell>
-                <TableCell>Weight</TableCell>
-                <TableCell>QNT</TableCell>
+                <TableCell>Remarks</TableCell>
                 <TableCell>Status</TableCell>
                 <TableCell>Actions</TableCell>
               </TableRow>
@@ -175,16 +170,15 @@ export default function BagMakingOrderList({ status, bagType }) {
             <TableBody>
               {filteredOrders.map((order) => (
                 <TableRow key={order.id}>
-                  <TableCell>{order.role_size}</TableCell>
                   <TableCell>{order.order_id}</TableCell>
                   <TableCell>{order.job_name}</TableCell>
                   <TableCell>{order.bag_type}</TableCell>
-                  <TableCell>{order.bag_color}</TableCell>
-                  <TableCell>{order.bag_size}</TableCell>
+                  <TableCell>{order.fabric_type || '-'}</TableCell>
                   <TableCell>{order.gsm}</TableCell>
+                  <TableCell>{order.fabric_color}</TableCell>
+                  <TableCell>{order.bag_size}</TableCell>
                   <TableCell>{order.quantity}</TableCell>
-                  <TableCell>{order.weight}</TableCell>
-                  <TableCell>{order.qnt}</TableCell>
+                  <TableCell>{order.remarks || 'N/A'}</TableCell>
                   <TableCell>
                     <Chip
                       label={order.status.replace('_', ' ').toUpperCase()}
@@ -194,27 +188,15 @@ export default function BagMakingOrderList({ status, bagType }) {
                   </TableCell>
                   <TableCell>
                     {order.status === 'pending' && (
-                      <Box sx={{ display: 'flex', gap: 1 }}>
-                        <Button
-                          startIcon={<Update />}
-                          variant="contained"
-                          color="primary"
-                          size="small"
-                          onClick={() => handleUpdateStatus(order.id)}
-                        >
-                          Move to Bag Making Process
-                        </Button>
-                        {bagType === 'dcut' && (
-                          <Button
-                            startIcon={<QrCodeScanner />}
-                            variant="outlined"
-                            size="small"
-                            onClick={() => handleVerify(order)}
-                          >
-                            Verify
-                          </Button>
-                        )}
-                      </Box>
+                      <Button
+                        startIcon={<Update />}
+                        variant="contained"
+                        color="primary"
+                        size="small"
+                        onClick={() => handleUpdateStatus(order.id)}
+                      >
+                        Start Process
+                      </Button>
                     )}
                     {order.status === 'in_progress' && (
                       <Button
@@ -224,7 +206,7 @@ export default function BagMakingOrderList({ status, bagType }) {
                         size="small"
                         onClick={() => handleCompleteOrder(order.id)}
                       >
-                        Work Completed
+                        Mark Complete
                       </Button>
                     )}
                     {order.status === 'completed' && (
@@ -236,17 +218,16 @@ export default function BagMakingOrderList({ status, bagType }) {
                           size="small"
                           onClick={() => handleBillingClick(order)}
                         >
-                          Direct Billing
+                          Billing
                         </Button>
-
                         <Button
                           startIcon={<LocalShipping />}
                           variant="contained"
                           color="primary"
                           size="small"
-                          onClick={() => handleMoveToBagMaking(order.id)}
+                          onClick={() => handleShipping(order.id)}
                         >
-                          Move to Bag Making
+                          Shipping
                         </Button>
                       </Box>
                     )}

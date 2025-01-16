@@ -20,69 +20,73 @@ import toast from 'react-hot-toast';
 import { useState } from 'react';
 import VerifyOrderDialog from './VerifyOrderDialog';
 
-// Mock data for orders including completed ones
-const mockOrders = [
-  {
-    id: 'FLX-001',
-    orderId: 'ORD-001',
-    jobName: 'Premium Shopping Bags',
-    quantity: 1000,
-    rollSize: '',
-    gsm: '',
-    fabricColor: '',
-    bagType: '',
-    printColor: '',
-    cylinderSize: '',
-    status: 'pending'
-  },
-  {
-    id: 'FLX-002',
-    orderId: 'ORD-002',
-    jobName: 'Eco Friendly Bags',
-    quantity: 2000,
-    rollSize: '',
-    gsm: '',
-    fabricColor: '',
-    bagType: '',
-    printColor: '',
-    cylinderSize: '',
-    status: 'pending'
-  },
-  {
-    id: 'FLX-003',
-    orderId: 'ORD-003',
-    jobName: 'Festival Bags',
-    quantity: 3000,
-    rollSize: '15x20',
-    gsm: '100',
-    fabricColor: 'Red',
-    bagType: 'W-Cut',
-    printColor: 'Gold',
-    cylinderSize: '30x40',
-    status: 'completed',
-    billingStatus: 'pending'
-  }
-];
 
 export default function FlexoOrderList({ status = 'pending' }) {
+
+
+  // Mock data for orders including completed ones
+  const mockOrders = [
+    {
+      id: 'FLX-001',
+      orderId: 'ORD-001',
+      jobName: 'Premium Shopping Bags',
+      fabricQuality: '',
+      gsm: '',
+      fabricColor: '',
+      bagType: '',
+      rollSize: '',
+      cylinderSize: '',
+      quantity: 1000,
+      remarks: '',
+      status: 'pending',
+    },
+    {
+      id: 'FLX-002',
+      orderId: 'ORD-002',
+      jobName: 'Eco Friendly Bags',
+      fabricQuality: '',
+      gsm: '',
+      fabricColor: '',
+      bagType: '',
+      rollSize: '',
+      cylinderSize: '',
+      quantity: 2000,
+      remarks: '',
+      status: 'pending',
+    },
+    {
+      id: 'FLX-003',
+      orderId: 'ORD-003',
+      jobName: 'Festival Bags',
+      fabricQuality: 'Premium',
+      gsm: '100',
+      fabricColor: 'Red',
+      bagType: 'W-Cut',
+      rollSize: '15x20',
+      cylinderSize: '30x40',
+      quantity: 3000,
+      remarks: 'Urgent delivery',
+      status: 'completed',
+      billingStatus: 'pending',
+    },
+  ];
   const [verifyDialogOpen, setVerifyDialogOpen] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [orders, setOrders] = useState(mockOrders);
   const [confirmBillingOpen, setConfirmBillingOpen] = useState(false);
   const [orderToBill, setOrderToBill] = useState(null);
 
-  const getStatusColor = (status) => {
-    const colors = {
-      pending: 'warning',
-      in_progress: 'info',
-      completed: 'success'
-    };
-    return colors[status] || 'default';
+
+  const statusColors = {
+    pending: 'warning',
+    in_progress: 'info',
+    completed: 'success',
   };
 
+  const getStatusColor = (status) => statusColors[status] || 'default';
+
   const handleVerify = (order) => {
-    // Check if any order is already in progress
-    if (orders.some(o => o.status === 'in_progress') && order.status === 'pending') {
+    if (orders.some((o) => o.status === 'in_progress') && order.status === 'pending') {
       toast.error('A job is already active. Please complete or deactivate it before starting a new one.');
       return;
     }
@@ -91,15 +95,9 @@ export default function FlexoOrderList({ status = 'pending' }) {
   };
 
   const handleVerifyComplete = (orderId, verifiedData) => {
-    setOrders(prevOrders =>
-      prevOrders.map(order =>
-        order.id === orderId
-          ? {
-            ...order,
-            ...verifiedData,
-            status: 'in_progress'
-          }
-          : order
+    setOrders((prevOrders) =>
+      prevOrders.map((order) =>
+        order.id === orderId ? { ...order, ...verifiedData, status: 'in_progress' } : order
       )
     );
     setVerifyDialogOpen(false);
@@ -108,7 +106,7 @@ export default function FlexoOrderList({ status = 'pending' }) {
   };
 
   const handleStartPrinting = (orderId) => {
-    if (orders.some(o => o.status === 'in_progress')) {
+    if (orders.some((o) => o.status === 'in_progress')) {
       toast.error('A job is already active. Please complete or deactivate it before starting a new one.');
       return;
     }
@@ -116,11 +114,9 @@ export default function FlexoOrderList({ status = 'pending' }) {
   };
 
   const handleUpdateStatus = (orderId) => {
-    setOrders(prevOrders =>
-      prevOrders.map(order =>
-        order.id === orderId
-          ? { ...order, status: 'completed', billingStatus: 'pending' }
-          : order
+    setOrders((prevOrders) =>
+      prevOrders.map((order) =>
+        order.id === orderId ? { ...order, status: 'completed', billingStatus: 'pending' } : order
       )
     );
     toast.success('Order completed successfully');
@@ -136,11 +132,9 @@ export default function FlexoOrderList({ status = 'pending' }) {
   };
 
   const handleConfirmBilling = () => {
-    setOrders(prevOrders =>
-      prevOrders.map(order =>
-        order.id === orderToBill.id
-          ? { ...order, billingStatus: 'completed' }
-          : order
+    setOrders((prevOrders) =>
+      prevOrders.map((order) =>
+        order.id === orderToBill.id ? { ...order, billingStatus: 'completed' } : order
       )
     );
     setConfirmBillingOpen(false);
@@ -148,8 +142,7 @@ export default function FlexoOrderList({ status = 'pending' }) {
     toast.success('Order moved to billing successfully');
   };
 
-  // Filter orders based on status
-  const filteredOrders = orders.filter(order => order.status === status);
+  const filteredOrders = orders.filter((order) => order.status === status);
 
   return (
     <>
@@ -160,13 +153,14 @@ export default function FlexoOrderList({ status = 'pending' }) {
               <TableRow>
                 <TableCell>Order ID</TableCell>
                 <TableCell>Job Name</TableCell>
-                <TableCell>Quantity</TableCell>
-                <TableCell>Roll Size</TableCell>
+                <TableCell>Fabric Quality</TableCell>
                 <TableCell>GSM</TableCell>
-                <TableCell>Fabric Color</TableCell>
+                <TableCell>Fabric Colour</TableCell>
                 <TableCell>Bag Type</TableCell>
-                <TableCell>Print Color</TableCell>
+                <TableCell>Roll Size</TableCell>
                 <TableCell>Cylinder Size</TableCell>
+                <TableCell>Quantity</TableCell>
+                <TableCell>Remarks</TableCell>
                 <TableCell>Status</TableCell>
                 <TableCell>Actions</TableCell>
               </TableRow>
@@ -176,13 +170,14 @@ export default function FlexoOrderList({ status = 'pending' }) {
                 <TableRow key={order.id}>
                   <TableCell>{order.orderId}</TableCell>
                   <TableCell>{order.jobName}</TableCell>
-                  <TableCell>{order.quantity}</TableCell>
-                  <TableCell>{order.rollSize || '-'}</TableCell>
+                  <TableCell>{order.fabricQuality || '-'}</TableCell>
                   <TableCell>{order.gsm || '-'}</TableCell>
                   <TableCell>{order.fabricColor || '-'}</TableCell>
                   <TableCell>{order.bagType || '-'}</TableCell>
-                  <TableCell>{order.printColor || '-'}</TableCell>
+                  <TableCell>{order.rollSize || '-'}</TableCell>
                   <TableCell>{order.cylinderSize || '-'}</TableCell>
+                  <TableCell>{order.quantity}</TableCell>
+                  <TableCell>{order.remarks || '-'}</TableCell>
                   <TableCell>
                     <Chip
                       label={order.status.replace('_', ' ').toUpperCase()}
@@ -225,7 +220,6 @@ export default function FlexoOrderList({ status = 'pending' }) {
                     )}
                     {order.status === 'completed' && (
                       <Box sx={{ display: 'flex', gap: 1 }}>
-
                         <Button
                           startIcon={<Receipt />}
                           variant="contained"
@@ -235,7 +229,6 @@ export default function FlexoOrderList({ status = 'pending' }) {
                         >
                           Direct Billing
                         </Button>
-
                         <Button
                           startIcon={<LocalShipping />}
                           variant="contained"
@@ -245,7 +238,6 @@ export default function FlexoOrderList({ status = 'pending' }) {
                         >
                           Move to Bag Making
                         </Button>
-
                       </Box>
                     )}
                   </TableCell>
@@ -263,7 +255,6 @@ export default function FlexoOrderList({ status = 'pending' }) {
         onVerifyComplete={handleVerifyComplete}
       />
 
-      {/* Billing Confirmation Dialog */}
       <Dialog
         open={confirmBillingOpen}
         onClose={() => setConfirmBillingOpen(false)}
